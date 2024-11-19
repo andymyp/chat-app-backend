@@ -12,6 +12,7 @@ import * as winston from 'winston';
             winston.format.colorize(),
             winston.format.timestamp({ format: 'DD/MM/YYYY HH:mm:ss A' }),
             winston.format.ms(),
+            winston.format.json(),
             winston.format.printf(
               ({ timestamp, context, level, message, ms }) => {
                 return `${timestamp} [${context}] ${level}: ${message} ${ms}`;
