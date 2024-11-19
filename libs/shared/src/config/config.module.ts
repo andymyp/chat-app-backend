@@ -7,11 +7,9 @@ import * as Joi from 'joi';
     Config.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        // APP
         API_PORT: Joi.number().required(),
-
-        // MongoDB
         MONGODB_URI: Joi.string().required(),
+        RABBITMQ_URI: Joi.string().required(),
       }),
     }),
   ],
