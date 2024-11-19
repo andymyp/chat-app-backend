@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chatapp
+      MONGO_INITDB_ROOT_PASSWORD: ChatApp2024!!!
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongodb:/data/db
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: chatapp
+      RABBITMQ_DEFAULT_PASS: ChatApp2024!!!
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --requirepass ChatApp2024!!!
+    ports:
+      - '6379:6379'
