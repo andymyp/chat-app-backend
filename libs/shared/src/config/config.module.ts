@@ -8,9 +8,14 @@ import * as Joi from 'joi';
       isGlobal: true,
       validationSchema: Joi.object({
         // APP
-        API_PORT: Joi.string().required(),
+        API_PORT: Joi.number().required(),
+
+        // MongoDB
+        MONGODB_URI: Joi.string().required(),
       }),
     }),
   ],
+  providers: [ConfigService],
+  exports: [ConfigService],
 })
 export class ConfigModule {}
