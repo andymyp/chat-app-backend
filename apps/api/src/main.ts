@@ -8,10 +8,12 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   const configService = app.get(ConfigService);
   const port = configService.get<number>('API_PORT');
 
-  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.enableCors();
+  app.useLogger(logger);
 
   await app.listen(port);
 }
