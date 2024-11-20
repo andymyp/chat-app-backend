@@ -10,6 +10,7 @@ import * as Joi from 'joi';
         API_PORT: Joi.number().required(),
         MONGODB_URI: Joi.string().required(),
         RABBITMQ_URI: Joi.string().required(),
+        REDIS_URI: Joi.string().required(),
       }),
     }),
   ],
