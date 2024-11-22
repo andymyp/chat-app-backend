@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OtpService } from './otp/otp.service';
-import { UserDto, UserResponseDto } from '@app/shared/dtos';
+import { AuthDto, UserResponseDto } from '@app/shared/dtos';
 import { Queues } from '@app/shared/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
@@ -24,7 +24,7 @@ export class AuthService {
     @Inject(Queues.USERS) private userClient: ClientProxy,
   ) {}
 
-  async signUp(data: UserDto) {
+  async signUp(data: AuthDto) {
     const created = this.userClient.send('create-user', data);
     const user = await lastValueFrom(created).catch((err) => {
       this.logger.warn(err);
@@ -35,7 +35,7 @@ export class AuthService {
     return { email: user.email };
   }
 
-  async signIn(data: UserDto) {
+  async signIn(data: AuthDto) {
     const email = data.email;
     const password = data.password;
 
@@ -72,6 +72,97 @@ export class AuthService {
       ...response,
       ...tokens,
     };
+  }
+
+  async signInOAuth(email: string) {
+    const getUser = this.userClient.send('get-user', { email });
+    let user = await lastValueFrom(getUser).catch((err) => {
+      this.logger.warn(err);
+    });
+
+    if (!user) {
+      const created = this.userClient.send('create-user', {
+        email: email,
+        password: Math.floor(100000 + Math.random() * 900000).toString(),
+      });
+
+      user = await lastValueFrom(created).catch((err) => {
+        this.logger.warn(err);
+      });
+    }
+
+    const tokens = await this.generateTokens(user._id, user.email);
+
+    const updateToken = this.userClient.send('update-token', {
+      _id: user._id,
+      refreshToken: tokens.refreshToken,
+    });
+
+    const updated = await lastValueFrom(updateToken).catch((err) => {
+      this.logger.warn(err);
+    });
+
+    const response = await Object.assign(new UserResponseDto(), updated);
+
+    return {
+      ...response,
+      ...tokens,
+    };
+  }
+
+  async resendOtp(email: string) {
+    const resend = this.otpService.send(email);
+    return resend;
+  }
+
+  async verify(email: string, otp: string) {
+    await this.otpService.verify(email, otp);
+
+    const getUser = this.userClient.send('get-user', { email });
+    const user = await lastValueFrom(getUser).catch((err) => {
+      this.logger.warn(err);
+    });
+
+    const tokens = await this.generateTokens(user._id, user.email);
+
+    const updateUser = this.userClient.send('update-user', {
+      ...user,
+      status: 1,
+      refreshToken: tokens.refreshToken,
+    });
+
+    const updated = await lastValueFrom(updateUser).catch((err) => {
+      this.logger.warn(err);
+    });
+
+    const response = await Object.assign(new UserResponseDto(), updated);
+
+    return {
+      ...response,
+      ...tokens,
+    };
+  }
+
+  async refreshToken(email: string, refreshToken: string) {
+    const getUser = this.userClient.send('get-user', { email });
+    const user = await lastValueFrom(getUser).catch((err) => {
+      this.logger.warn(err);
+    });
+
+    if (
+      !user ||
+      !user.refreshToken ||
+      !(await bcrypt.compare(refreshToken, user.refreshToken))
+    ) {
+      throw new RpcException(new UnauthorizedException('Access Denied'));
+    }
+
+    const token = await this.jwtService.signAsync({
+      _id: user._id,
+      email: user.email,
+    });
+
+    return token;
   }
 
   async generateTokens(_id: string, email: string) {
