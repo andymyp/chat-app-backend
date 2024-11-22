@@ -11,3 +11,13 @@ export class UserDto {
   status: number;
   refreshToken: string;
 }
+
+export class UserResponseDto {
+  _id: string;
+  name: string;
+  about: string;
+  email: string;
+  avatar: string;
+  online: boolean;
+  status: number;
+}
