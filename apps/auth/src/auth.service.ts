@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OtpService } from './otp/otp.service';
-import { AuthDto, UserResponseDto } from '@app/shared/dtos';
+import { AuthDto, UserDto, UserResponseDto } from '@app/shared/dtos';
 import { Queues } from '@app/shared/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
@@ -74,7 +74,8 @@ export class AuthService {
     };
   }
 
-  async signInOAuth(email: string) {
+  async signInOAuth(data: UserDto) {
+    const email = data.email;
     const getUser = this.userClient.send('get-user', { email });
     let user = await lastValueFrom(getUser).catch((err) => {
       this.logger.warn(err);
@@ -82,7 +83,7 @@ export class AuthService {
 
     if (!user) {
       const created = this.userClient.send('create-user', {
-        email: email,
+        ...data,
         password: Math.floor(100000 + Math.random() * 900000).toString(),
       });
 

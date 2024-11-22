@@ -7,7 +7,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { AuthDto } from '@app/shared/dtos';
+import { AuthDto, UserDto } from '@app/shared/dtos';
 
 @Controller()
 export class AuthController {
@@ -33,13 +33,10 @@ export class AuthController {
   }
 
   @MessagePattern('sign-in-oauth')
-  async signInOAuth(
-    @Ctx() context: RmqContext,
-    @Payload() { email }: { email: string },
-  ) {
+  async signInOAuth(@Ctx() context: RmqContext, @Payload() data: UserDto) {
     this.rmqService.ack(context);
 
-    const document = await this.authService.signInOAuth(email);
+    const document = await this.authService.signInOAuth(data);
     return document;
   }
 
