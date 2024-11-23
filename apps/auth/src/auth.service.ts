@@ -27,7 +27,11 @@ export class AuthService {
   async signUp(data: AuthDto) {
     const created = this.userClient.send('create-user', data);
     const user = await lastValueFrom(created).catch((err) => {
-      this.logger.warn(err);
+      if (err.status === 409) {
+        throw new RpcException(err);
+      } else {
+        this.logger.error(err);
+      }
     });
 
     await this.otpService.send(user.email);
@@ -41,7 +45,7 @@ export class AuthService {
 
     const getUser = this.userClient.send('get-user', { email });
     const user = await lastValueFrom(getUser).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -63,7 +67,7 @@ export class AuthService {
     });
 
     const updated = await lastValueFrom(updateToken).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     const response = await Object.assign(new UserResponseDto(), updated);
@@ -78,7 +82,7 @@ export class AuthService {
     const email = data.email;
     const getUser = this.userClient.send('get-user', { email });
     let user = await lastValueFrom(getUser).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     if (!user) {
@@ -88,7 +92,7 @@ export class AuthService {
       });
 
       user = await lastValueFrom(created).catch((err) => {
-        this.logger.warn(err);
+        this.logger.error(err);
       });
     }
 
@@ -100,7 +104,7 @@ export class AuthService {
     });
 
     const updated = await lastValueFrom(updateToken).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     const response = await Object.assign(new UserResponseDto(), updated);
@@ -121,7 +125,7 @@ export class AuthService {
 
     const getUser = this.userClient.send('get-user', { email });
     const user = await lastValueFrom(getUser).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     const tokens = await this.generateTokens(user._id, user.email);
@@ -133,7 +137,7 @@ export class AuthService {
     });
 
     const updated = await lastValueFrom(updateUser).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     const response = await Object.assign(new UserResponseDto(), updated);
@@ -147,7 +151,7 @@ export class AuthService {
   async refreshToken(email: string, refreshToken: string) {
     const getUser = this.userClient.send('get-user', { email });
     const user = await lastValueFrom(getUser).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
     });
 
     if (

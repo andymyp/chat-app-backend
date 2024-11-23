@@ -1,10 +1,12 @@
 import { Queues } from '@app/shared/constants';
 import { AuthDto, UserDto } from '@app/shared/dtos';
 import {
+  ConflictException,
   Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
@@ -18,8 +20,12 @@ export class AuthService {
   async signUp(data: AuthDto) {
     const sended = this.authClient.send('sign-up', data);
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.warn(err);
-      throw new InternalServerErrorException(err.message);
+      if (err.status === 409) {
+        throw new ConflictException(err);
+      } else {
+        this.logger.error(err);
+        throw new InternalServerErrorException(err.message);
+      }
     });
 
     return response;
@@ -28,8 +34,12 @@ export class AuthService {
   async signIn(data: AuthDto) {
     const sended = this.authClient.send('sign-in', data);
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.warn(err);
-      throw new InternalServerErrorException(err.message);
+      if (err.status === 401) {
+        throw new UnauthorizedException(err.message);
+      } else {
+        this.logger.error(err);
+        throw new InternalServerErrorException(err.message);
+      }
     });
 
     return response;
@@ -38,7 +48,7 @@ export class AuthService {
   async signInOAuth(data: UserDto) {
     const sended = this.authClient.send('sign-in-oauth', data);
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
       throw new InternalServerErrorException(err.message);
     });
 
@@ -48,7 +58,7 @@ export class AuthService {
   async resendOtp(email: string) {
     const sended = this.authClient.send('resend-otp', { email });
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
       throw new InternalServerErrorException(err.message);
     });
 
@@ -58,8 +68,12 @@ export class AuthService {
   async verify(email: string, otp: string) {
     const sended = this.authClient.send('verify', { email, otp });
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.warn(err);
-      throw new InternalServerErrorException(err.message);
+      if (err.status === 401) {
+        throw new UnauthorizedException(err.message);
+      } else {
+        this.logger.error(err);
+        throw new InternalServerErrorException(err.message);
+      }
     });
 
     return response;
@@ -72,7 +86,7 @@ export class AuthService {
     });
 
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.warn(err);
+      this.logger.error(err);
       throw new InternalServerErrorException(err.message);
     });
 
