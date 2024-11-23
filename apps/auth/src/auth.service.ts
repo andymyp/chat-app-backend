@@ -1,8 +1,6 @@
 import {
-  ConflictException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -33,7 +31,6 @@ export class AuthService {
         throw new RpcException(err);
       } else {
         this.logger.error(err);
-        throw new InternalServerErrorException(err.message);
       }
     });
 

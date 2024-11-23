@@ -68,8 +68,12 @@ export class AuthService {
   async verify(email: string, otp: string) {
     const sended = this.authClient.send('verify', { email, otp });
     const response = await lastValueFrom(sended).catch((err) => {
-      this.logger.error(err);
-      throw new InternalServerErrorException(err.message);
+      if (err.status === 401) {
+        throw new UnauthorizedException(err.message);
+      } else {
+        this.logger.error(err);
+        throw new InternalServerErrorException(err.message);
+      }
     });
 
     return response;
