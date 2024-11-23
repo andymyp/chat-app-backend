@@ -29,6 +29,7 @@ export class UsersService {
 
     const created = await this.usersRepository.create({
       ...data,
+      name: data.email.split('@')[0],
       password: await bcrypt.hash(data.password, 10),
     });
 
