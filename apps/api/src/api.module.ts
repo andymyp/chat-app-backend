@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, LoggerModule, RmqModule } from '@app/shared';
+import { ConfigModule, LoggerModule } from '@app/shared';
 import { RedisModule } from './redis/redis.module';
-import { Queues } from '@app/shared/constants';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    LoggerModule,
-    RedisModule,
-    RmqModule.register({ name: Queues.AUTH }),
-  ],
+  imports: [ConfigModule, LoggerModule, RedisModule, AuthModule],
   controllers: [],
   providers: [],
 })

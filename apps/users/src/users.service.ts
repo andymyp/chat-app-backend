@@ -46,6 +46,10 @@ export class UsersService {
   }
 
   async updateRefreshToken(_id: string, refreshToken: string | null) {
+    if (refreshToken) {
+      refreshToken = await bcrypt.hash(refreshToken, 10);
+    }
+
     const updated = await this.usersRepository.updateRefreshToken(
       new Types.ObjectId(_id),
       refreshToken,
