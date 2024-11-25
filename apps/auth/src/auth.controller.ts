@@ -62,6 +62,25 @@ export class AuthController {
     return document;
   }
 
+  @MessagePattern('forgot-password')
+  async forgotPassword(
+    @Ctx() context: RmqContext,
+    @Payload() { email }: { email: string },
+  ) {
+    this.rmqService.ack(context);
+
+    const document = await this.authService.forgotPassword(email);
+    return document;
+  }
+
+  @MessagePattern('reset-password')
+  async resetPassword(@Ctx() context: RmqContext, @Payload() data: AuthDto) {
+    this.rmqService.ack(context);
+
+    const document = await this.authService.resetPassword(data);
+    return document;
+  }
+
   @MessagePattern('refresh-token')
   async refreshToken(
     @Ctx() context: RmqContext,

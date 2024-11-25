@@ -1,6 +1,7 @@
 import {
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { Queues } from '@app/shared/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import * as bcrypt from 'bcrypt';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
+    private readonly mailerService: MailerService,
     @Inject(Queues.USERS) private userClient: ClientProxy,
   ) {}
 
@@ -149,6 +152,69 @@ export class AuthService {
     const updateUser = this.userClient.send('update-user', {
       ...user,
       status: 1,
+      refreshToken: tokens.refreshToken,
+    });
+
+    const updated = await lastValueFrom(updateUser).catch((err) => {
+      this.logger.error(err);
+    });
+
+    const userResponse: UserResponseDto = {
+      _id: updated._id,
+      name: updated.name,
+      about: updated.about,
+      email: updated.email,
+      avatar: updated.avatar,
+      online: updated.online,
+      status: updated.status,
+    };
+
+    return {
+      user: userResponse,
+      ...tokens,
+    };
+  }
+
+  async forgotPassword(email: string) {
+    const getUser = this.userClient.send('get-user', { email });
+    const user = await lastValueFrom(getUser).catch((err) => {
+      this.logger.error(err);
+    });
+
+    if (!user) {
+      throw new RpcException(new UnauthorizedException('Email not registered'));
+    }
+
+    const token = await this.jwtService.signAsync({ email });
+    const link = `${this.config.get<string>('FRONTEND_URL')}/reset-password?token=${token}`;
+
+    try {
+      const sended = await this.mailerService.sendMail({
+        to: email,
+        subject: 'Chat App Reset Password Request',
+        template: './forgot-password',
+        context: { link },
+      });
+
+      return sended;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new RpcException(new InternalServerErrorException(error.message));
+    }
+  }
+
+  async resetPassword(data: AuthDto) {
+    const email = data.email;
+    const getUser = this.userClient.send('get-user', { email });
+    const user = await lastValueFrom(getUser).catch((err) => {
+      this.logger.error(err);
+    });
+
+    const tokens = await this.generateTokens(user._id, user.email);
+
+    const updateUser = this.userClient.send('update-user', {
+      _id: user._id,
+      password: data.password,
       refreshToken: tokens.refreshToken,
     });
 

@@ -36,7 +36,7 @@ export class UsersController {
   }
 
   @MessagePattern('update-user')
-  async update(@Ctx() context: RmqContext, @Payload() data: UserDto) {
+  async update(@Ctx() context: RmqContext, @Payload() data: Partial<UserDto>) {
     this.rmqService.ack(context);
 
     const document = await this.usersService.update(data._id, data);

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -11,13 +12,16 @@ import { AuthService } from './auth.service';
 import { AuthDto, UserDto } from '@app/shared/dtos';
 import { JoiValidationPipe } from '../pipes/joi-validator.pipe';
 import {
+  forgotPassValidation,
   resendOtpValidation,
+  resetPassValidation,
   signInOAValidation,
   signInValidation,
   signUpValidation,
   verifyValidation,
 } from './auth.validation';
 import { Request } from 'express';
+import { JwtResetGuard } from './guards/jwt-reset.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @Controller('auth')
@@ -59,6 +63,25 @@ export class AuthController {
       req.body.email,
       req.body.otp,
     );
+
+    return response;
+  }
+
+  @Post('forgot-password')
+  @UsePipes(new JoiValidationPipe(forgotPassValidation))
+  async forgotPassword(@Req() req: Request) {
+    const response = await this.authService.forgotPassword(req.body.email);
+    return response;
+  }
+
+  @Patch('reset-password')
+  @UsePipes(new JoiValidationPipe(resetPassValidation))
+  @UseGuards(JwtResetGuard)
+  async resetPassword(@Req() req: Request) {
+    const response = await this.authService.resetPassword({
+      email: req.user['email'],
+      password: req.body.password,
+    });
 
     return response;
   }
