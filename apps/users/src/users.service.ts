@@ -36,8 +36,13 @@ export class UsersService {
     return created;
   }
 
-  async get(email: string) {
+  async getByEmail(email: string) {
     const document = await this.usersRepository.findByEmail(email);
+    return document;
+  }
+
+  async getById(_id: string) {
+    const document = await this.usersRepository.findById(_id);
     return document;
   }
 
