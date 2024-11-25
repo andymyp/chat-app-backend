@@ -43,6 +43,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/users/tsconfig.app.json"
       }
+    },
+    "upload": {
+      "type": "application",
+      "root": "apps/upload",
+      "entryFile": "main",
+      "sourceRoot": "apps/upload/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/upload/tsconfig.app.json"
+      }
     }
   },
   "monorepo": true,
