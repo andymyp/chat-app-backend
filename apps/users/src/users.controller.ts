@@ -25,18 +25,29 @@ export class UsersController {
   }
 
   @MessagePattern('get-user')
-  async get(
+  async getByEmail(
     @Ctx() context: RmqContext,
     @Payload() { email }: { email: string },
   ) {
     this.rmqService.ack(context);
 
-    const document = await this.usersService.get(email);
+    const document = await this.usersService.getByEmail(email);
+    return document;
+  }
+
+  @MessagePattern('get-user-id')
+  async getById(
+    @Ctx() context: RmqContext,
+    @Payload() { _id }: { _id: string },
+  ) {
+    this.rmqService.ack(context);
+
+    const document = await this.usersService.getById(_id);
     return document;
   }
 
   @MessagePattern('update-user')
-  async update(@Ctx() context: RmqContext, @Payload() data: UserDto) {
+  async update(@Ctx() context: RmqContext, @Payload() data: Partial<UserDto>) {
     this.rmqService.ack(context);
 
     const document = await this.usersService.update(data._id, data);

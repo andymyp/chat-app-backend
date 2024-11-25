@@ -36,12 +36,21 @@ export class UsersService {
     return created;
   }
 
-  async get(email: string) {
+  async getByEmail(email: string) {
     const document = await this.usersRepository.findByEmail(email);
     return document;
   }
 
+  async getById(_id: string) {
+    const document = await this.usersRepository.findById(_id);
+    return document;
+  }
+
   async update(_id: Types.ObjectId, data: Partial<UserDto>) {
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+
     const updated = await this.usersRepository.updateById(_id, data);
     return updated;
   }

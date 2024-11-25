@@ -5,11 +5,17 @@ import { PassportModule } from '@nestjs/passport';
 import { RmqModule } from '@app/shared';
 import { Queues } from '@app/shared/constants';
 import { JwtAccessStrategy } from './strategies/jwt-access.strategy';
+import { JwtResetStrategy } from './strategies/jwt-reset.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [PassportModule, RmqModule.register({ name: Queues.AUTH })],
   controllers: [AuthController],
-  providers: [AuthService, JwtAccessStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthService,
+    JwtAccessStrategy,
+    JwtResetStrategy,
+    JwtRefreshStrategy,
+  ],
 })
 export class AuthModule {}

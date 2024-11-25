@@ -79,6 +79,30 @@ export class AuthService {
     return response;
   }
 
+  async forgotPassword(email: string) {
+    const sended = this.authClient.send('forgot-password', { email });
+    const response = await lastValueFrom(sended).catch((err) => {
+      if (err.status === 401) {
+        throw new UnauthorizedException(err.message);
+      } else {
+        this.logger.error(err);
+        throw new InternalServerErrorException(err.message);
+      }
+    });
+
+    return response;
+  }
+
+  async resetPassword(data: AuthDto) {
+    const sended = this.authClient.send('reset-password', data);
+    const response = await lastValueFrom(sended).catch((err) => {
+      this.logger.error(err);
+      throw new InternalServerErrorException(err.message);
+    });
+
+    return response;
+  }
+
   async refreshToken(email: string, refreshToken: string) {
     const sended = this.authClient.send('refresh-token', {
       email,

@@ -18,6 +18,11 @@ export class UsersRepository extends AbstractRepository<User> {
     return document;
   }
 
+  async findById(_id: string) {
+    const document = await this.findOne({ _id });
+    return document;
+  }
+
   async updateById(_id: Types.ObjectId, data: Partial<UserDto>) {
     const document = await this.findOneAndUpdate({ _id }, { $set: data });
     return document;
