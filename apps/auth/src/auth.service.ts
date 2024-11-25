@@ -70,10 +70,18 @@ export class AuthService {
       this.logger.error(err);
     });
 
-    const response = await Object.assign(new UserResponseDto(), updated);
+    const userResponse: UserResponseDto = {
+      _id: updated._id,
+      name: updated.name,
+      about: updated.about,
+      email: updated.email,
+      avatar: updated.avatar,
+      online: updated.online,
+      status: updated.status,
+    };
 
     return {
-      ...response,
+      user: userResponse,
       ...tokens,
     };
   }
@@ -107,10 +115,18 @@ export class AuthService {
       this.logger.error(err);
     });
 
-    const response = await Object.assign(new UserResponseDto(), updated);
+    const userResponse: UserResponseDto = {
+      _id: updated._id,
+      name: updated.name,
+      about: updated.about,
+      email: updated.email,
+      avatar: updated.avatar,
+      online: updated.online,
+      status: updated.status,
+    };
 
     return {
-      ...response,
+      user: userResponse,
       ...tokens,
     };
   }
@@ -140,10 +156,18 @@ export class AuthService {
       this.logger.error(err);
     });
 
-    const response = await Object.assign(new UserResponseDto(), updated);
+    const userResponse: UserResponseDto = {
+      _id: updated._id,
+      name: updated.name,
+      about: updated.about,
+      email: updated.email,
+      avatar: updated.avatar,
+      online: updated.online,
+      status: updated.status,
+    };
 
     return {
-      ...response,
+      user: userResponse,
       ...tokens,
     };
   }
